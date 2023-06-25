@@ -1,0 +1,9 @@
+(gdb) x/10x $esp
+0x7bdc: 0x00007d87      0x00000000      0x00000000      0x00000000
+        ^               ^ `sub $0x10,%esp` reserved for function call
+        | `call *0x10018`
+0x7bec: 0x00000000      0x00000000      0x00000000      0x00000000
+        ^ push %ebx`    ^ `push %esi`   ^ `push %edi`   ^ `push %ebp`
+0x7bfc: 0x00007c4d      0x8ec031fa
+        ^               ^ 0x7c00 top of stack
+        | `call bootmain`
