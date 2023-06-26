@@ -61,24 +61,38 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       _exit(0);
-    fprintf(stderr, "exec not implemented\n");
-    // Your code here ...
+    execvp(ecmd->argv[0], ecmd->argv);
+    perror("runcmd: execcmd: execv");
     break;
 
   case '>':
   case '<':
     rcmd = (struct redircmd*)cmd;
-    fprintf(stderr, "redir not implemented\n");
-    // Your code here ...
+    int fd = open(rcmd->file, rcmd->flags,
+        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    dup2(fd, rcmd->fd);
+    close(fd);
     runcmd(rcmd->cmd);
     break;
 
   case '|':
     pcmd = (struct pipecmd*)cmd;
-    fprintf(stderr, "pipe not implemented\n");
-    // Your code here ...
-    break;
-  }    
+    if (pipe(p) != 0) {
+      perror("runcmd: pipecmd: pipe");
+    } else {  // left | right
+      if (fork1() == 0) {  // child process, run left |
+        close(p[0]);
+        dup2(p[1], 1);
+        close(p[1]);
+        runcmd(pcmd->left);
+      } else {
+        close(p[1]);
+        dup2(p[0], 0);
+        close(p[0]);
+        runcmd(pcmd->right);
+      }
+    }
+  }
   _exit(0);
 }
 
