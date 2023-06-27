@@ -4,6 +4,12 @@
 
 [Repoistory](https://pdos.csail.mit.edu/6.828/2018/jos.git)
 
-## Completed labs
+## Completed
 
-- [Lab 1: Booting a PC](https://pdos.csail.mit.edu/6.828/2018/labs/lab1/) [branch](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
+- [Lab 1: Booting a PC](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
+- [Homework: boot xv6](/hw1.txt)
+- [Homework: shell](/hw2.c)
+
+## In progress
+
+- [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
