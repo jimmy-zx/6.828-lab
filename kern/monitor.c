@@ -26,7 +26,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
-	{ "vmmgr", "Virtual memory mapping manager", mon_vmmgr },
+	{ "vmlst", "List the mappings and permissions of a range of VAs", mon_vmlst },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -87,25 +87,28 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 }
 
 int
-mon_vmmgr(int argc, char **argv, struct Trapframe *tf)
+mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 {
 	uintptr_t begin, end, cur;
 	pte_t *pte;
 
-	cprintf("Virtual Memory Manager\n");
-	if (argc == 4 && strcmp(argv[1], "s") == 0) {
-		begin = ROUNDDOWN(strtol(argv[2], NULL, 16), PGSIZE);
-		end = ROUNDUP(strtol(argv[3], NULL, 16), PGSIZE);
-		cprintf("showmappings: %p - %p\n", begin, end);
+	if (argc == 3) {
+		begin = ROUNDDOWN(strtol(argv[1], NULL, 16), PGSIZE);
+		end = ROUNDUP(strtol(argv[2], NULL, 16), PGSIZE);
+		cprintf("vmlst: %p - %p\n", begin, end);
 		for (cur = begin; cur < end; cur+= PGSIZE) {
 			pte = pgdir_walk(kern_pgdir, (void *)cur, 0);
 			if (pte == NULL) {
 				continue;
 			} else {
-				cprintf("%p -> %p", cur, PTE_ADDR(*pte));
+				cprintf("%08p -> %08p %s %s\n",
+					cur, PTE_ADDR(*pte),
+					*pte & PTE_W ? "RW" : "RO",
+					*pte & PTE_U ? "U" : "S");
 			}
-			cprintf("\n");
 		}
+	} else {
+		cprintf("Usage: vmlst [start] [end]\n");
 	}
 	return 0;
 }
