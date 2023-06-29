@@ -38,6 +38,7 @@ usys.S
 
 - `user.h`: defines user-space syscall prototype
 - `usys.S`: defines user-space syscall implementation (emits an interrupt when called)
+- `date.c`: user program `date`
 
 ## Appendix: diff
 
