@@ -192,6 +192,8 @@ cga_putc(int c)
 	}
 
 	// What is the purpose of this?
+  // If the last line is reached, copy everything upward by 1 row and clear
+  //  the last row.
 	if (crt_pos >= CRT_SIZE) {
 		int i;
 

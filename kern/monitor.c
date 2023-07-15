@@ -6,7 +6,9 @@
 #include <inc/memlayout.h>
 #include <inc/assert.h>
 #include <inc/x86.h>
+#include <inc/types.h>
 
+#include <kern/pmap.h>
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
@@ -25,6 +27,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+	{ "vmlst", "List the mappings and permissions of a range of VAs", mon_vmlst },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -59,9 +62,57 @@ int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
+	uint32_t *ebp;
+	struct Eipdebuginfo info;
+	
+	cprintf("Stack backtrace:\n");
+	ebp = (uint32_t *)read_ebp();
+	/* Stack frame: ^Top
+	 * *ebp = base pointer of caller <- ebp
+	 *  eip = return address <- ebp + 1
+	 * arg1                  <- ebp + 2
+	 * arg2                  <- ebp + 3
+	 * ...
+	 */
+	do {
+		cprintf("  ebp %08x  eip %08x  args %08x %08x %08x %08x %08x\n",
+			(uint32_t)ebp, *(ebp + 1),
+			*(ebp + 2), *(ebp + 3), *(ebp + 4), *(ebp + 5), *(ebp + 6));
+		debuginfo_eip(*(ebp + 1), &info);
+		cprintf("         %s:%d: %.*s+%d\n",
+			info.eip_file, info.eip_line,
+			info.eip_fn_namelen, info.eip_fn_name, *(ebp + 1) - info.eip_fn_addr);
+		ebp = (uint32_t *)*ebp;
+	} while (ebp != NULL);
 	return 0;
 }
 
+int
+mon_vmlst(int argc, char **argv, struct Trapframe *tf)
+{
+	uintptr_t begin, end, cur;
+	pte_t *pte;
+
+	if (argc == 3) {
+		begin = ROUNDDOWN(strtol(argv[1], NULL, 16), PGSIZE);
+		end = ROUNDUP(strtol(argv[2], NULL, 16), PGSIZE);
+		cprintf("vmlst: %p - %p\n", begin, end);
+		for (cur = begin; cur < end; cur+= PGSIZE) {
+			pte = pgdir_walk(kern_pgdir, (void *)cur, 0);
+			if (pte == NULL) {
+				continue;
+			} else {
+				cprintf("%08p -> %08p %s %s\n",
+					cur, PTE_ADDR(*pte),
+					*pte & PTE_W ? "RW" : "RO",
+					*pte & PTE_U ? "U" : "S");
+			}
+		}
+	} else {
+		cprintf("Usage: vmlst [start] [end]\n");
+	}
+	return 0;
+}
 
 
 /***** Kernel monitor command interpreter *****/
