@@ -7,9 +7,8 @@
 ## Completed
 
 - [Lab 1: Booting a PC](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
+- [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
 - [Homework: boot xv6](/hw1.txt)
 - [Homework: shell](/hw2.c)
-
-## In progress
-
-- [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
+- [Homework: xv6 system calls](/hw3.md)
+- [Homework: xv6 lazy page allocation](/hw4.md)
