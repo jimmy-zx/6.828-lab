@@ -13,6 +13,7 @@
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
 #include <kern/trap.h>
+#include <kern/env.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -28,6 +29,9 @@ static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
 	{ "vmlst", "List the mappings and permissions of a range of VAs", mon_vmlst },
+	{ "backtrace", "Print backtrace of all stack frames", mon_backtrace },
+	{ "continue", "Continue running the current enviroonment", mon_continue },
+	{ "step", "Toggle single stepping", mon_step },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -114,6 +118,51 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
+int
+mon_continue(int argc, char **argv, struct Trapframe *tf)
+{
+	switch (tf->tf_trapno) {
+		case T_DEBUG:
+		case T_BRKPT:
+			break;
+		default:
+			cprintf("continue: trapno %ld is not #BP\n", (long)tf->tf_trapno);
+			return 1;
+	}
+	if (!curenv) {
+		cprintf("continue: curenv is NULL\n");
+		return 1;
+	}
+	if (curenv->env_status != ENV_RUNNING) {
+		cprintf("continue: curenv is not running\n");
+		return 1;
+	}
+	env_run(curenv);  /* does NOT return */
+	return 2;
+}
+
+int
+mon_step(int argc, char **argv, struct Trapframe *tf)
+{
+	switch (tf->tf_trapno) {
+		case T_DEBUG:
+		case T_BRKPT:
+			break;
+		default:
+			cprintf("step: trapno %ld is not #BP\n", (long)tf->tf_trapno);
+			return 1;
+	}
+	if (!curenv) {
+		cprintf("step: curenv is NULL\n");
+		return 1;
+	}
+	if (curenv->env_status != ENV_RUNNING) {
+		cprintf("step: curenv is not running\n");
+		return 1;
+	}
+	tf->tf_eflags ^= 0x0100;
+	return 0;
+}
 
 /***** Kernel monitor command interpreter *****/
 

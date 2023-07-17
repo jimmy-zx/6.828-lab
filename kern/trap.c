@@ -71,6 +71,7 @@ trap_init(void)
 	for (i = 0; i < 256; i++) {
 		SETGATE(idt[i], 0, GD_KT, vectors[i], 0);
 	}
+	SETGATE(idt[T_BRKPT], 0, GD_KT, vectors[T_BRKPT], 3);
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, vectors[T_SYSCALL], 3);
 
 	// Per-CPU setup 
@@ -154,6 +155,10 @@ trap_dispatch(struct Trapframe *tf)
 	switch (tf->tf_trapno) {
 		case T_PGFLT:
 			page_fault_handler(tf);
+			break;
+		case T_DEBUG:
+		case T_BRKPT:
+			monitor(tf);
 			break;
 	}
 
