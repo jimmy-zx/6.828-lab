@@ -31,7 +31,7 @@ static struct Command commands[] = {
 	{ "vmlst", "List the mappings and permissions of a range of VAs", mon_vmlst },
 	{ "backtrace", "Print backtrace of all stack frames", mon_backtrace },
 	{ "continue", "Continue running the current enviroonment", mon_continue },
-	{ "step", "Toggle single stepping", mon_step },
+	{ "step", "Step one instruction over the current environment", mon_step },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -121,47 +121,23 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 int
 mon_continue(int argc, char **argv, struct Trapframe *tf)
 {
-	switch (tf->tf_trapno) {
-		case T_DEBUG:
-		case T_BRKPT:
-			break;
-		default:
-			cprintf("continue: trapno %ld is not #BP\n", (long)tf->tf_trapno);
-			return 1;
-	}
-	if (!curenv) {
-		cprintf("continue: curenv is NULL\n");
+	if (!tf) {
+		cprintf("continue: no trapframe\n");
 		return 1;
 	}
-	if (curenv->env_status != ENV_RUNNING) {
-		cprintf("continue: curenv is not running\n");
-		return 1;
-	}
-	env_run(curenv);  /* does NOT return */
-	return 2;
+	tf->tf_eflags &= ~FL_TF;
+	return -1;
 }
 
 int
 mon_step(int argc, char **argv, struct Trapframe *tf)
 {
-	switch (tf->tf_trapno) {
-		case T_DEBUG:
-		case T_BRKPT:
-			break;
-		default:
-			cprintf("step: trapno %ld is not #BP\n", (long)tf->tf_trapno);
-			return 1;
-	}
-	if (!curenv) {
-		cprintf("step: curenv is NULL\n");
+	if (!tf) {
+		cprintf("step: no trapframe\n");
 		return 1;
 	}
-	if (curenv->env_status != ENV_RUNNING) {
-		cprintf("step: curenv is not running\n");
-		return 1;
-	}
-	tf->tf_eflags ^= 0x0100;
-	return 0;
+	tf->tf_eflags |= FL_TF;
+	return -1;
 }
 
 /***** Kernel monitor command interpreter *****/
