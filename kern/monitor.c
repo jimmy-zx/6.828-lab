@@ -79,10 +79,18 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 	 * ...
 	 */
 	do {
+		if ((uint32_t) ebp == 0xeebfdff0) {
+			cprintf("  ebp %08x  eip %08x  args %08x %08x\n",
+				(uint32_t)ebp, *(ebp + 1),
+				*(ebp + 2), *(ebp + 3));
+			return 0;
+		}
 		cprintf("  ebp %08x  eip %08x  args %08x %08x %08x %08x %08x\n",
 			(uint32_t)ebp, *(ebp + 1),
 			*(ebp + 2), *(ebp + 3), *(ebp + 4), *(ebp + 5), *(ebp + 6));
-		debuginfo_eip(*(ebp + 1), &info);
+		if (debuginfo_eip(*(ebp + 1), &info)) {
+			return 1;
+		}
 		cprintf("         %s:%d: %.*s+%d\n",
 			info.eip_file, info.eip_line,
 			info.eip_fn_namelen, info.eip_fn_name, *(ebp + 1) - info.eip_fn_addr);
