@@ -282,7 +282,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 	uintptr_t pos;
 	struct PageInfo *pp;
 	int r;
-	for (pos = ROUNDDOWN((uintptr_t)va, PGSIZE); pos <= ROUNDUP((uintptr_t)va + len, PGSIZE); pos += PGSIZE) {
+	for (pos = ROUNDDOWN((uintptr_t)va, PGSIZE); pos < ROUNDUP((uintptr_t)va + len, PGSIZE); pos += PGSIZE) {
 		if ((pp = page_alloc(0)) == NULL) {
 			panic("region_alloc: page_alloc fails\n");
 		}
