@@ -97,10 +97,13 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 	uintptr_t begin, end, cur;
 	pte_t *pte;
 
-	if (argc == 3) {
+	if (argc >= 2) {
 		begin = ROUNDDOWN(strtol(argv[1], NULL, 16), PGSIZE);
-		end = ROUNDUP(strtol(argv[2], NULL, 16), PGSIZE);
-		cprintf("vmlst: %p - %p\n", begin, end);
+		if (argc == 3) {
+			end = ROUNDUP(strtol(argv[2], NULL, 16), PGSIZE);
+		} else {
+			end = begin + PGSIZE;
+		}
 		for (cur = begin; cur < end; cur+= PGSIZE) {
 			pte = pgdir_walk(kern_pgdir, (void *)cur, 0);
 			if (pte == NULL) {
@@ -113,7 +116,7 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 			}
 		}
 	} else {
-		cprintf("Usage: vmlst [start] [end]\n");
+		cprintf("Usage: vmlst start [end]\n");
 	}
 	return 0;
 }
