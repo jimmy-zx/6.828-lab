@@ -66,6 +66,7 @@ void put(int key, int value)
 static struct entry*
 get(int key)
 {
+  /* no lock is required as every thread is done */
   struct entry *e = 0;
   for (e = table[key % NBUCKET]; e != 0; e = e->next) {
     if (e->key == key) break;
