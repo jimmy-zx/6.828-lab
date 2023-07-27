@@ -315,14 +315,26 @@ page_init(void)
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
-	size_t i;
+	size_t i = 0;
 	physaddr_t boot_alloc_end = PADDR(boot_alloc(0));
 
 	page_free_list = NULL;
+
 	pages[0].pp_ref = 1;
 	pages[0].pp_link = NULL;
+	i++;
 
-	for (i = 1; i < npages_basemem; i++) {
+	for (i = 1; i * PGSIZE < MPENTRY_PADDR; i++) {
+		pages[i].pp_ref = 0;
+		pages[i].pp_link = page_free_list;
+		page_free_list = &pages[i];
+	}
+
+	pages[i].pp_ref = 1;
+	pages[i].pp_link = NULL;
+	i++;
+
+	for (; i < npages_basemem; i++) {
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -599,7 +611,20 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	physaddr_t pa_start = ROUNDDOWN(pa, PGSIZE);
+	physaddr_t pa_end = ROUNDUP(pa + size, PGSIZE);
+	size_t actual_size = pa_end - pa_start;
+	void *const old_base = (void *)base;
+
+	if (pa_end > MMIOLIM) {
+		panic("mmio_map_region: pa_end > MMIOLIM\n");
+	}
+
+	boot_map_region(kern_pgdir, base, actual_size, pa_start, PTE_PCD | PTE_PWT | PTE_W);
+
+	base += actual_size;
+
+	return old_base;
 }
 
 static uintptr_t user_mem_check_addr;
