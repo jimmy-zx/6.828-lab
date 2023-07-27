@@ -277,6 +277,13 @@ mem_init_mp(void)
 	//
 	// LAB 4: Your code here:
 
+	int i;
+
+	for (i = 0; i < NCPU; i++) {
+		boot_map_region(kern_pgdir,
+			KSTACKTOP - i * (KSTKSIZE + KSTKGAP) - KSTKSIZE,
+			KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
+	}
 }
 
 // --------------------------------------------------------------
@@ -616,12 +623,11 @@ mmio_map_region(physaddr_t pa, size_t size)
 	size_t actual_size = pa_end - pa_start;
 	void *const old_base = (void *)base;
 
-	if (pa_end > MMIOLIM) {
+	if (base + actual_size > MMIOLIM) {
 		panic("mmio_map_region: pa_end > MMIOLIM\n");
 	}
 
 	boot_map_region(kern_pgdir, base, actual_size, pa_start, PTE_PCD | PTE_PWT | PTE_W);
-
 	base += actual_size;
 
 	return old_base;
