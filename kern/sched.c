@@ -35,13 +35,13 @@ sched_yield(void)
 
 	do {
 		if (envs[cur].env_status == ENV_RUNNABLE) {
-			break;
+			env_run(envs + cur);
 		}
 		cur = (cur + 1) % NENV;
 	} while (cur != begin);
 
-	if (envs[cur].env_status == ENV_RUNNABLE) {
-		env_run(envs + cur);
+	if (curenv && envs[ENVX(curenv->env_id)].env_status == ENV_RUNNING) {
+		env_run(curenv);
 	}
 
 	// sched_halt never returns
