@@ -70,7 +70,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 	struct Eipdebuginfo info;
 	
 	cprintf("Stack backtrace:\n");
-	ebp = (uint32_t *)read_ebp();
+	ebp = tf == NULL ? (uint32_t *) read_ebp() : (uint32_t *) tf->tf_regs.reg_ebp;
 	/* Stack frame: ^Top
 	 * *ebp = base pointer of caller <- ebp
 	 *  eip = return address <- ebp + 1
@@ -104,6 +104,7 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 {
 	uintptr_t begin, end, cur;
 	pte_t *pte;
+	pde_t *pgdir = curenv == NULL ? kern_pgdir : curenv->env_pgdir;
 
 	if (argc >= 2) {
 		begin = ROUNDDOWN(strtol(argv[1], NULL, 16), PGSIZE);
@@ -113,7 +114,7 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 			end = begin + PGSIZE;
 		}
 		for (cur = begin; cur < end; cur+= PGSIZE) {
-			pte = pgdir_walk(kern_pgdir, (void *)cur, 0);
+			pte = pgdir_walk(pgdir, (void *)cur, 0);
 			if (pte == NULL) {
 				continue;
 			} else {

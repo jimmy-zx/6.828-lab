@@ -514,7 +514,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	if ((pte = pgdir_walk(pgdir, va, 1)) == NULL) {
 		return -E_NO_MEM;
 	}
-	pp->pp_ref++;  // increment first so that page_remove will not free
+	pp->pp_ref++;  // increment first so that page_remove will not free when inserting the same page
 	if (*pte & PTE_P) {
 		page_remove(pgdir, va);
 	}
