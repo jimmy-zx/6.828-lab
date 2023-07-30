@@ -30,20 +30,25 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	spin_lock(&sched_lock);
+
 	begin = curenv == NULL ? 0 : ENVX(curenv->env_id) + 1;
 	cur = begin;
 
 	do {
 		if (envs[cur].env_status == ENV_RUNNABLE) {
+			spin_unlock(&sched_lock);
 			env_run(envs + cur);
 		}
 		cur = (cur + 1) % NENV;
 	} while (cur != begin);
 
 	if (curenv && envs[ENVX(curenv->env_id)].env_status == ENV_RUNNING) {
+		spin_unlock(&sched_lock);
 		env_run(curenv);
 	}
 
+	spin_unlock(&sched_lock);
 	// sched_halt never returns
 	sched_halt();
 }
@@ -80,7 +85,7 @@ sched_halt(void)
 	xchg(&thiscpu->cpu_status, CPU_HALTED);
 
 	// Release the big kernel lock as if we were "leaving" the kernel
-	unlock_kernel();
+	// unlock_kernel();
 
 	// Reset stack pointer, enable interrupts and then halt.
 	asm volatile (
