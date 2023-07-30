@@ -17,6 +17,7 @@
 #include <inc/memlayout.h>
 #include <inc/syscall.h>
 #include <inc/trap.h>
+#include <inc/math.h>
 
 #define USED(x)		(void)(x)
 
