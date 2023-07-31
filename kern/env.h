@@ -33,4 +33,19 @@ void	env_pop_tf(struct Trapframe *tf) __attribute__((noreturn));
 			   type);					\
 	} while (0)
 
+// Must be holding env_lock
+#define _ENV_CREATE(x, type)						\
+	do {								\
+		extern uint8_t ENV_PASTE3(_binary_obj_, x, _start)[];	\
+		_env_create(ENV_PASTE3(_binary_obj_, x, _start),		\
+			   type);					\
+	} while (0)
+
+// The following functions requires holding env_lock
+int _env_alloc(struct Env **newenv_store, envid_t parent_id);
+int _envid2env(envid_t envid, struct Env **env_store, bool checkperm);
+void _env_create(uint8_t *binary, enum EnvType type);
+void _env_free(struct Env *e);
+void _env_destroy(struct Env *e);
+
 #endif // !JOS_KERN_ENV_H

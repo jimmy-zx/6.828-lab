@@ -62,6 +62,12 @@ struct Pseudodesc gdt_pd = {
 	sizeof(gdt) - 1, (unsigned long) gdt
 };
 
+int _env_alloc(struct Env **newenv_store, envid_t parent_id);
+int _envid2env(envid_t envid, struct Env **env_store, bool checkperm);
+void _env_create(uint8_t *binary, enum EnvType type);
+void _env_free(struct Env *e);
+void _env_destroy(struct Env *e);
+
 //
 // Converts an envid to an env pointer.
 // If checkperm is set, the specified environment must be either the
@@ -73,10 +79,11 @@ struct Pseudodesc gdt_pd = {
 //   On error, sets *env_store to NULL.
 //
 int
-envid2env(envid_t envid, struct Env **env_store, bool checkperm)
+_envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 {
 	struct Env *e;
 
+	assert(env_lock.locked);
 	// If envid is zero, return the current environment.
 	if (envid == 0) {
 		*env_store = curenv;
@@ -108,6 +115,16 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 	return 0;
 }
 
+int
+envid2env(envid_t envid, struct Env **env_store, bool checkperm) {
+	int res;
+	spin_lock(&env_lock);
+	res = _envid2env(envid, env_store, checkperm);
+	spin_unlock(&env_lock);
+	return res;
+}
+
+
 // Mark all environments in 'envs' as free, set their env_ids to 0,
 // and insert them into the env_free_list.
 // Make sure the environments are in the free list in the same order
@@ -121,6 +138,7 @@ env_init(void)
 	// LAB 3: Your code here.
 	size_t i;
 
+	spin_lock(&env_lock);
 	env_free_list = NULL;
 	for (i = NENV - 1; i < NENV; i--) {
 		envs[i].env_status = ENV_FREE;
@@ -128,6 +146,7 @@ env_init(void)
 		envs[i].env_link = env_free_list;
 		env_free_list = &envs[i];
 	}
+	spin_unlock(&env_lock);
 
 	// Per-CPU part of the initialization
 	env_init_percpu();
@@ -170,6 +189,7 @@ env_setup_vm(struct Env *e)
 	int i;
 	struct PageInfo *p = NULL;
 
+	assert(env_lock.locked);
 	// Allocate a page for the page directory
 	if (!(p = page_alloc(ALLOC_ZERO)))
 		return -E_NO_MEM;
@@ -211,12 +231,13 @@ env_setup_vm(struct Env *e)
 //	-E_NO_MEM on memory exhaustion
 //
 int
-env_alloc(struct Env **newenv_store, envid_t parent_id)
+_env_alloc(struct Env **newenv_store, envid_t parent_id)
 {
 	int32_t generation;
 	int r;
 	struct Env *e;
 
+	assert(env_lock.locked);
 	if (!(e = env_free_list))
 		return -E_NO_FREE_ENV;
 
@@ -273,6 +294,15 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 	return 0;
+}
+
+int
+env_alloc(struct Env **newenv_store, envid_t parent_id) {
+	int res;
+	spin_lock(&env_lock);
+	res = _env_alloc(newenv_store, parent_id);
+	spin_unlock(&env_lock);
+	return res;
 }
 
 //
@@ -362,6 +392,7 @@ load_icode(struct Env *e, uint8_t *binary)
 	struct Proghdr *ph, *eph;
 	struct Elf *elf_header = (struct Elf *)binary;
 
+	assert(env_lock.locked);
 	if (elf_header->e_magic != ELF_MAGIC) {
 		panic("load_icode: invalid elf hader found\n");
 	}
@@ -400,13 +431,14 @@ load_icode(struct Env *e, uint8_t *binary)
 // The new env's parent ID is set to 0.
 //
 void
-env_create(uint8_t *binary, enum EnvType type)
+_env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
 	struct Env *env;
 	int r;
 
-	if ((r = env_alloc(&env, 0)) < 0) {
+	assert(env_lock.locked);
+	if ((r = _env_alloc(&env, 0)) < 0) {
 		panic("env_create: env_alloc fails %e\n", r);
 	}
 
@@ -415,16 +447,24 @@ env_create(uint8_t *binary, enum EnvType type)
 	load_icode(env, binary);
 }
 
+void
+env_create(uint8_t *binary, enum EnvType type) {
+	spin_lock(&env_lock);
+	_env_create(binary, type);
+	spin_unlock(&env_lock);
+}
+
 //
 // Frees env e and all memory it uses.
 //
 void
-env_free(struct Env *e)
+_env_free(struct Env *e)
 {
 	pte_t *pt;
 	uint32_t pdeno, pteno;
 	physaddr_t pa;
 
+	assert(env_lock.locked);
 	// If freeing the current environment, switch to kern_pgdir
 	// before freeing the page directory, just in case the page
 	// gets reused.
@@ -468,14 +508,22 @@ env_free(struct Env *e)
 	env_free_list = e;
 }
 
+void
+env_free(struct Env *e) {
+	spin_lock(&env_lock);
+	_env_free(e);
+	spin_unlock(&env_lock);
+}
+
 //
 // Frees environment e.
 // If e was the current env, then runs a new environment (and does not return
 // to the caller).
 //
 void
-env_destroy(struct Env *e)
+_env_destroy(struct Env *e)
 {
+	assert(env_lock.locked);
 	// If e is currently running on other CPUs, we change its state to
 	// ENV_DYING. A zombie environment will be freed the next time
 	// it traps to the kernel.
@@ -484,12 +532,20 @@ env_destroy(struct Env *e)
 		return;
 	}
 
-	env_free(e);
+	_env_free(e);
 
 	if (curenv == e) {
 		curenv = NULL;
 		sched_yield();
 	}
+}
+
+
+void
+env_destroy(struct Env *e) {
+	spin_lock(&env_lock);
+	_env_destroy(e);
+	spin_unlock(&env_lock);
 }
 
 
@@ -502,8 +558,10 @@ env_destroy(struct Env *e)
 void
 env_pop_tf(struct Trapframe *tf)
 {
+	assert(env_lock.locked);
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
+	spin_unlock(&env_lock);
 
 	asm volatile(
 		"\tmovl %0,%%esp\n"
@@ -541,6 +599,7 @@ env_run(struct Env *e)
 	//	e->env_tf.  Go back through the code you wrote above
 	//	and make sure you have set the relevant parts of
 	//	e->env_tf to sensible values.
+	assert(env_lock.locked);
 	if (curenv != NULL && curenv->env_status == ENV_RUNNING) {
 		curenv->env_status = ENV_RUNNABLE;
 	}

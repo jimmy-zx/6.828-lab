@@ -25,7 +25,7 @@ void spin_unlock(struct spinlock *lk);
 
 #define spin_initlock(lock)   __spin_initlock(lock, #lock)
 
-extern struct spinlock sched_lock, cons_lock, pmap_lock, ipc_lock, env_lock;
+extern struct spinlock cons_lock, pmap_lock, ipc_lock, env_lock;
 
 // extern struct spinlock kernel_lock;
 

@@ -219,6 +219,7 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 4: Your code here.
 	switch (tf->tf_trapno) {
 		case IRQ_OFFSET + IRQ_TIMER:
+			spin_lock(&env_lock);
 			lapic_eoi();
 			sched_yield();
 			return;
@@ -269,6 +270,7 @@ trap(struct Trapframe *tf)
 		if (curenv->env_status == ENV_DYING) {
 			env_free(curenv);
 			curenv = NULL;
+			spin_lock(&env_lock);
 			sched_yield();
 		}
 
@@ -290,10 +292,12 @@ trap(struct Trapframe *tf)
 	// If we made it to this point, then no other environment was
 	// scheduled, so we should return to the current environment
 	// if doing so makes sense.
-	if (curenv && curenv->env_status == ENV_RUNNING)
+	spin_lock(&env_lock);
+	if (curenv && curenv->env_status == ENV_RUNNING) {
 		env_run(curenv);
-	else
+	} else {
 		sched_yield();
+	}
 }
 
 
@@ -311,7 +315,12 @@ page_fault_handler(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	if ((tf->tf_cs & 3) == 0) {
 		print_trapframe(tf);
-		panic("Page fault at kernel: %p\n", fault_va);
+		// panic("Page fault at kernel: %p\n", fault_va);
+		cprintf("kernel panic op CPU %d at %s:%d: page fault at kernel: %p\n",
+			cpunum(), __FILE__, __LINE__, fault_va);
+		while (1) {
+			monitor(tf);
+		}
 	}
 
 	// We've already handled kernel-mode exceptions, so if we get here,
@@ -364,6 +373,7 @@ page_fault_handler(struct Trapframe *tf)
 		utf->utf_esp = tf->tf_esp;
 		tf->tf_esp = (uint32_t) utf;
 		tf->tf_eip = (uint32_t) curenv->env_pgfault_upcall;
+		spin_lock(&env_lock);
 		env_run(curenv);
 	}
 
