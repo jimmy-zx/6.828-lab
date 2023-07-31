@@ -1067,14 +1067,10 @@ index 26e64bc..4722b67 100644
  	}
 ```
 
-### Appendix
-
-Notes:
-
-[^1]: The check is done by `assert(lock.locked)`. Better using
-`kern/spinlock.c:holding()`.
-
-References:
+### References
 
 - [6.828 - Lab4 Challenge 1：Fine-grained Kernel Locking](https://zhuanlan.zhihu.com/p/365252547)
 - [add new locks with bkl removed](https://github.com/Kirhhoff/jos/commit/af092ad74ebb774f20518d621e40fa8e868f6530)
+
+[^1]: The check is done by `assert(lock.locked)`. Better using
+`kern/spinlock.c:holding()`.
