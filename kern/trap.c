@@ -191,7 +191,10 @@ trap_dispatch(struct Trapframe *tf)
 			return;
 		case T_DEBUG:
 		case T_BRKPT:
+			// TODO: check if this is valid
+			spin_lock(&env_lock);
 			monitor(tf);
+			spin_unlock(&env_lock);
 			return;
 		case T_SYSCALL:
 			tf->tf_regs.reg_eax = syscall(
