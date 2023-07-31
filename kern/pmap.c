@@ -28,6 +28,7 @@ static struct PageInfo *_page_alloc(int alloc_flags);
 static struct PageInfo *_page_lookup(pde_t *pgdir, void *va, pte_t **pte_store);
 static void _page_decref(struct PageInfo* pp);
 static void _page_free(struct PageInfo *pp);
+static void _boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
 
 
 // --------------------------------------------------------------
@@ -388,6 +389,7 @@ _page_alloc(int alloc_flags)
 {
 	struct PageInfo *newpage;
 
+	assert(pmap_lock.locked);
 	if ((newpage = page_free_list) == NULL) {
 		return NULL;
 	}
@@ -416,6 +418,7 @@ page_alloc(int alloc_flags)
 static void
 _page_free(struct PageInfo *pp)
 {
+	assert(pmap_lock.locked);
 	assert(pp->pp_ref == 0);
 	if (pp < pages || pp > pages + npages) {
 		spin_unlock(&pmap_lock);
@@ -443,6 +446,7 @@ page_free(struct PageInfo *pp) {
 static void
 _page_decref(struct PageInfo* pp)
 {
+	assert(pmap_lock.locked);
 	if (--pp->pp_ref == 0)
 		_page_free(pp);
 }
@@ -480,6 +484,7 @@ page_decref(struct PageInfo* pp)
 static pte_t *
 _pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
+	assert(pmap_lock.locked);
 	struct PageInfo *pp = NULL;
 	pde_t *const pde = &pgdir[PDX(va)];
 	if (!(*pde & PTE_P)) {
@@ -514,16 +519,25 @@ pgdir_walk(pde_t *pgdir, const void *va, int create) {
 //
 // Hint: the TA solution uses pgdir_walk
 static void
-boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+_boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	size_t i;
 	pte_t *pte;
+	assert(pmap_lock.locked);
 	for (i = 0; i < size; i += PGSIZE) {
 		if ((pte = _pgdir_walk(kern_pgdir, (const void *)(va + i), 1)) == NULL) {
 			panic("boot_map_region: pgdir_walk fails\n");
 		}
 		*pte = (pa + i) | perm | PTE_P;
 	}
+}
+
+static void
+boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+{
+	spin_lock(&pmap_lock);
+	_boot_map_region(pgdir, va, size, pa, perm);
+	spin_unlock(&pmap_lock);
 }
 
 //
@@ -584,6 +598,7 @@ static struct PageInfo *
 _page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	pte_t *pte;
+	assert(pmap_lock.locked);
 	if ((pte = _pgdir_walk(pgdir, va, 0)) == NULL || !(*pte & PTE_P)) {
 		return NULL;
 	}
@@ -624,6 +639,7 @@ _page_remove(pde_t *pgdir, void *va)
 {
 	pte_t *pte;
 	struct PageInfo *pp;
+	assert(pmap_lock.locked);
 	if ((pp = _page_lookup(pgdir, va, &pte)) == NULL) {
 		return;
 	}
@@ -694,7 +710,7 @@ mmio_map_region(physaddr_t pa, size_t size)
 		panic("mmio_map_region: pa_end > MMIOLIM\n");
 	}
 
-	boot_map_region(kern_pgdir, base, actual_size, pa_start, PTE_PCD | PTE_PWT | PTE_W);
+	_boot_map_region(kern_pgdir, base, actual_size, pa_start, PTE_PCD | PTE_PWT | PTE_W);
 	base += actual_size;
 
 	spin_unlock(&pmap_lock);
