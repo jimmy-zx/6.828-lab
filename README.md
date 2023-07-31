@@ -6,9 +6,10 @@
 
 ## Completed Labs
 
-- [Lab 1: Booting a PC](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
-- [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
-- [Lab 3: User Environments](https://github.com/jimmy-zx/6.828-lab/tree/lab3)
+1. [Lab 1: Booting a PC](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
+2. [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
+3. [Lab 3: User Environments](https://github.com/jimmy-zx/6.828-lab/tree/lab3)
+4. [Lab 4: Preemptive Multitasking](https://github.com/jimmy-zx/6.828-lab/tree/lab4)
 
 ## Completed Homeworks
 
