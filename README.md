@@ -19,3 +19,12 @@
 4. [Homework: xv6 lazy page allocation](/hw4.md)
 5. [Homework: xv6 CPU alarm](/hw5.md)
 6. [Homework: Threads and Locking](/hw6.c)
+
+## Notes
+
+- For newer versions of `gcc`, there is a warning
+```
+warning: STABS debugging information is obsolete and not supported anymore
+```
+
+Solution: remove `-Werror`
