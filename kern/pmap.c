@@ -421,11 +421,9 @@ _page_free(struct PageInfo *pp)
 	assert(pmap_lock.locked);
 	assert(pp->pp_ref == 0);
 	if (pp < pages || pp > pages + npages) {
-		spin_unlock(&pmap_lock);
 		panic("page_free: out of range %p\n", pp);
 	}
 	if (pp->pp_link != NULL) {
-		spin_unlock(&pmap_lock);
 		panic("page_free: double free on %p\n", pp);
 	}
 	pp->pp_link = page_free_list;
