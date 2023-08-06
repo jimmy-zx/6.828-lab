@@ -19,6 +19,8 @@
 4. [Homework: xv6 lazy page allocation](/hw4.md)
 5. [Homework: xv6 CPU alarm](/hw5.md)
 6. [Homework: Threads and Locking](/hw6.c)
+7. [Homework: xv6 locking](/hw7.md)
+8. [Homework: User-level threads](/hw8.md)
 
 ## Notes
 
