@@ -4,14 +4,18 @@
 
 [Repoistory](https://pdos.csail.mit.edu/6.828/2018/jos.git)
 
-## Completed Labs
+## Progress
+
+`oct 22`
+
+## Completed Labs (of 7)
 
 1. [Lab 1: Booting a PC](https://github.com/jimmy-zx/6.828-lab/tree/lab1)
 2. [Lab 2: Memory Management](https://github.com/jimmy-zx/6.828-lab/tree/lab2)
 3. [Lab 3: User Environments](https://github.com/jimmy-zx/6.828-lab/tree/lab3)
 4. [Lab 4: Preemptive Multitasking](https://github.com/jimmy-zx/6.828-lab/tree/lab4)
 
-## Completed Homeworks
+## Completed Homeworks (of 19)
 
 1. [Homework: boot xv6](/hw1.txt)
 2. [Homework: shell](/hw2.c)
@@ -25,9 +29,7 @@
 
 ## Notes
 
-- For newer versions of `gcc`, there is a warning
+- Remove `-Werror` if the following warning occurs:
 ```
 warning: STABS debugging information is obsolete and not supported anymore
 ```
-
-Solution: remove `-Werror`
