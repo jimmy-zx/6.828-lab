@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <pthread.h>
+#include <string.h>
 
 // #define SOL
 
@@ -27,19 +28,19 @@ barrier_init(void)
 static void 
 barrier(int n)
 {
-  pthread_mutex_lock(&bstate.barrier_mutex);
+  assert(!pthread_mutex_lock(&bstate.barrier_mutex));
 
   bstate.nthread++;
   if (bstate.nthread == nthread) {  // last thread
     bstate.round++;
     bstate.nthread = 0;
-    pthread_mutex_unlock(&bstate.barrier_mutex);
-    pthread_cond_broadcast(&bstate.barrier_cond);
+    assert(!pthread_mutex_unlock(&bstate.barrier_mutex));
+    assert(!pthread_cond_broadcast(&bstate.barrier_cond));
     return;
   }
 
-  pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex);
-  pthread_mutex_unlock(&bstate.barrier_mutex);
+  assert(!pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex));
+  assert(!pthread_mutex_unlock(&bstate.barrier_mutex));
 }
 
 static void *
