@@ -25,9 +25,21 @@ barrier_init(void)
 }
 
 static void 
-barrier()
+barrier(int n)
 {
-  bstate.round++;
+  pthread_mutex_lock(&bstate.barrier_mutex);
+
+  bstate.nthread++;
+  if (bstate.nthread == nthread) {  // last thread
+    bstate.round++;
+    bstate.nthread = 0;
+    pthread_mutex_unlock(&bstate.barrier_mutex);
+    pthread_cond_broadcast(&bstate.barrier_cond);
+    return;
+  }
+
+  pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex);
+  pthread_mutex_unlock(&bstate.barrier_mutex);
 }
 
 static void *
@@ -40,9 +52,11 @@ thread(void *xa)
   for (i = 0; i < 20000; i++) {
     int t = bstate.round;
     assert (i == t);
-    barrier();
+    barrier(n);
     usleep(random() % 100);
   }
+
+  return NULL;
 }
 
 int

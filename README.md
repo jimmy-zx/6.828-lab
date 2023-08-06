@@ -21,6 +21,7 @@
 6. [Homework: Threads and Locking](/hw6.c)
 7. [Homework: xv6 locking](/hw7.md)
 8. [Homework: User-level threads](/hw8.md)
+9. [Homework: Barriers](/hw9.c)
 
 ## Notes
 
