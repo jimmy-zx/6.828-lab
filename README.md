@@ -1,8 +1,12 @@
-# Lab for 6.828: Operating System Engineering Fall 2018
+# Assignments for 6.828: Operating System Engineering Fall 2018
 
 [Course page](https://pdos.csail.mit.edu/6.828/2018/index.html)
 
 [Repoistory](https://pdos.csail.mit.edu/6.828/2018/jos.git)
+
+[Lecture Recordings for Fall 2014](https://www.youtube.com/playlist?list=PLfciLKR3SgqNJKKIKUliWoNBBH1VHL3AP)
+
+[Lecture Recordings for Fall 2020 (6.S081)](https://www.youtube.com/playlist?list=PLTsf9UeqkReZHXWY9yJvTwLJWYYPcKEqK)
 
 ## Progress
 
