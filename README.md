@@ -6,7 +6,7 @@
 
 ## Progress
 
-`oct 22`
+(Upcoming) `oct 24`
 
 ## Completed Labs (of 7)
 
@@ -26,6 +26,7 @@
 7. [Homework: xv6 locking](/hw7.md)
 8. [Homework: User-level threads](/hw8.md)
 9. [Homework: Barriers](/hw9.c)
+10. [Homework: bigger files for xv6](/hw10.md)
 
 ## Notes
 
