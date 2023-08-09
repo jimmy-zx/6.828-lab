@@ -8,10 +8,13 @@
 void sched_halt(void);
 
 // Choose a user environment to run and run it.
+//
+// Must be holding env_lock
 void
 sched_yield(void)
 {
 	struct Env *idle;
+	size_t begin, cur;
 
 	// Implement simple round-robin scheduling.
 	//
@@ -30,6 +33,21 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	assert(env_lock.locked);
+
+	begin = curenv == NULL ? 0 : ENVX(curenv->env_id) + 1;
+	cur = begin;
+
+	do {
+		if (envs[cur].env_status == ENV_RUNNABLE) {
+			env_run(envs + cur);
+		}
+		cur = (cur + 1) % NENV;
+	} while (cur != begin);
+
+	if (curenv && envs[ENVX(curenv->env_id)].env_status == ENV_RUNNING) {
+		env_run(curenv);
+	}
 
 	// sched_halt never returns
 	sched_halt();
@@ -38,11 +56,13 @@ sched_yield(void)
 // Halt this CPU when there is nothing to do. Wait until the
 // timer interrupt wakes it up. This function never returns.
 //
+// Must be holding env_lock
 void
 sched_halt(void)
 {
 	int i;
 
+	assert(env_lock.locked);
 	// For debugging and testing purposes, if there are no runnable
 	// environments in the system, then drop into the kernel monitor.
 	for (i = 0; i < NENV; i++) {
@@ -51,6 +71,8 @@ sched_halt(void)
 		     envs[i].env_status == ENV_DYING))
 			break;
 	}
+	// Note: at this point we don't need to hold env_lock, but unlocking
+	//  will cause other CPUS to also drop into the kernel monitor.
 	if (i == NENV) {
 		cprintf("No runnable environments in the system!\n");
 		while (1)
@@ -67,7 +89,8 @@ sched_halt(void)
 	xchg(&thiscpu->cpu_status, CPU_HALTED);
 
 	// Release the big kernel lock as if we were "leaving" the kernel
-	unlock_kernel();
+	// unlock_kernel();
+	spin_unlock(&env_lock);
 
 	// Reset stack pointer, enable interrupts and then halt.
 	asm volatile (
@@ -76,7 +99,7 @@ sched_halt(void)
 		"pushl $0\n"
 		"pushl $0\n"
 		// Uncomment the following line after completing exercise 13
-		//"sti\n"
+		"sti\n"
 		"1:\n"
 		"hlt\n"
 		"jmp 1b\n"

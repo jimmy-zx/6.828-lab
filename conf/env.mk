@@ -17,4 +17,4 @@ V = @
 # If the makefile cannot find your QEMU binary, uncomment the
 # following line and set it to the full path to QEMU.
 #
-# QEMU=
+QEMU=./tools/6.828-qemu/i386-softmmu/qemu-system-i386

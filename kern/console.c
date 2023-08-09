@@ -9,6 +9,7 @@
 #include <kern/console.h>
 #include <kern/trap.h>
 #include <kern/picirq.h>
+#include <kern/spinlock.h>
 
 static void cons_intr(int (*proc)(void));
 static void cons_putc(int c);
@@ -197,6 +198,8 @@ cga_putc(int c)
 	}
 
 	// What is the purpose of this?
+  // If the last line is reached, copy everything upward by 1 row and clear
+  //  the last row.
 	if (crt_pos >= CRT_SIZE) {
 		int i;
 
@@ -423,6 +426,7 @@ cons_getc(void)
 	// poll for any pending input characters,
 	// so that this function works even when interrupts are disabled
 	// (e.g., when called from the kernel monitor).
+	spin_lock(&cons_lock);
 	serial_intr();
 	kbd_intr();
 
@@ -431,8 +435,10 @@ cons_getc(void)
 		c = cons.buf[cons.rpos++];
 		if (cons.rpos == CONSBUFSIZE)
 			cons.rpos = 0;
+		spin_unlock(&cons_lock);
 		return c;
 	}
+	spin_unlock(&cons_lock);
 	return 0;
 }
 

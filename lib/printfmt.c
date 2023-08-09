@@ -7,6 +7,7 @@
 #include <inc/string.h>
 #include <inc/stdarg.h>
 #include <inc/error.h>
+#include <inc/math.h>
 
 /*
  * Space or zero padding and a field width are supported for the numeric
@@ -58,6 +59,23 @@ printnum(void (*putch)(int, void*), void *putdat,
 	putch("0123456789abcdef"[num % base], putdat);
 }
 
+/*
+ * Print a real number (base <= 16) in reverse order.
+ *
+ * width: number of digits after decimal point (if less than 0, defaults to 6)
+ */
+static void
+printreal(void (*putch)(int, void*), void *putdat,
+	double real, unsigned base, int width)
+{
+	unsigned long long intpart = (unsigned long long) real;
+	unsigned long long decpart = (unsigned long long) ((real - intpart) * _ipow(10, width >= 0 ? width : 6));
+
+	printnum(putch, putdat, intpart, base, 0, ' ');
+	putch('.', putdat);
+	printnum(putch, putdat, decpart, base, 0, ' ');
+}
+
 // Get an unsigned int of various possible sizes from a varargs list,
 // depending on the lflag parameter.
 static unsigned long long
@@ -84,6 +102,12 @@ getint(va_list *ap, int lflag)
 		return va_arg(*ap, int);
 }
 
+static double
+getfloat(va_list *ap, int lflag)
+{
+	return va_arg(*ap, double);
+}
+
 
 // Main function to format and print a string.
 void printfmt(void (*putch)(int, void*), void *putdat, const char *fmt, ...);
@@ -94,6 +118,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 	register const char *p;
 	register int ch, err;
 	unsigned long long num;
+	double real;
 	int base, lflag, width, precision, altflag;
 	char padc;
 
@@ -196,6 +221,17 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				putch(' ', putdat);
 			break;
 
+		// float
+		case 'f':
+			real = getfloat(&ap, lflag);
+			if (real < 0) {
+				putch('-', putdat);
+				real = -real;
+			}
+			base = 10;
+			printreal(putch, putdat, real, base, width);
+			break;
+
 		// (signed) decimal
 		case 'd':
 			num = getint(&ap, lflag);
@@ -214,11 +250,9 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
 		// (unsigned) octal
 		case 'o':
-			// Replace this with your code.
-			putch('X', putdat);
-			putch('X', putdat);
-			putch('X', putdat);
-			break;
+			num = getuint(&ap, lflag);
+			base = 8;
+			goto number;
 
 		// pointer
 		case 'p':
