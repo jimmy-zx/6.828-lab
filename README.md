@@ -21,16 +21,19 @@
 
 ## Completed Homeworks (of 19)
 
-1. [Homework: boot xv6](/hw1.txt)
-2. [Homework: shell](/hw2.c)
-3. [Homework: xv6 system calls](/hw3.md)
-4. [Homework: xv6 lazy page allocation](/hw4.md)
-5. [Homework: xv6 CPU alarm](/hw5.md)
-6. [Homework: Threads and Locking](/hw6.c)
-7. [Homework: xv6 locking](/hw7.md)
-8. [Homework: User-level threads](/hw8.md)
-9. [Homework: Barriers](/hw9.c)
-10. [Homework: bigger files for xv6](/hw10.md)
+| Number | Link |
+|-|-|
+| 1  | [Homework: boot xv6](/hw1.txt) |
+| 2  | [Homework: shell](/hw2.c) |
+| 3  | [Homework: xv6 system calls](/hw3.md) |
+| 4  | [Homework: xv6 lazy page allocation](/hw4.md) |
+| 5  | [Homework: xv6 CPU alarm](/hw5.md) |
+| 6  | [Homework: Threads and Locking](/hw6.c) |
+| 7  | [Homework: xv6 locking](/hw7.md) |
+| 8  | [Homework: User-level threads](/hw8.md) |
+| 9  | [Homework: Barriers](/hw9.c) |
+| 10 | [Homework: bigger files for xv6](/hw10.md) |
+| 11 | [Homework: Homework: xv6 log](/hw11.md) |
 
 ## Notes
 
