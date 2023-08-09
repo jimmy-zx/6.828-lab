@@ -10,9 +10,9 @@
 
 ## Progress
 
-(Upcoming) `oct 24`
+(Upcoming) `nov 5`
 
-## Completed Labs (of 7)
+## Completed Labs (of 6)
 
 | Name                            | Branch                                                  |
 |---------------------------------|---------------------------------------------------------|
