@@ -217,7 +217,6 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		page_free(pp);
 		return err;
 	}
-	pp->pp_ref += 1;
 	return 0;
 }
 
@@ -276,7 +275,6 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	if ((err = page_insert(dstenv->env_pgdir, pp, dstva, perm)) < 0) {
 		return err;
 	}
-	pp->pp_ref += 1;
 
 	return 0;
 }
