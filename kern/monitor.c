@@ -115,13 +115,14 @@ mon_vmlst(int argc, char **argv, struct Trapframe *tf)
 		}
 		for (cur = begin; cur < end; cur+= PGSIZE) {
 			pte = pgdir_walk(pgdir, (void *)cur, 0);
-			if (pte == NULL) {
+			if (pte == NULL || !(*pte & PTE_P)) {
 				continue;
 			} else {
-				cprintf("%08p -> %08p %s %s\n",
+				cprintf("%08p -> %08p %s %s (%llx)\n",
 					cur, PTE_ADDR(*pte),
 					*pte & PTE_W ? "RW" : "RO",
-					*pte & PTE_U ? "U" : "S");
+					*pte & PTE_U ? "U" : "S",
+					(unsigned long long)*pte);
 			}
 		}
 	} else {
