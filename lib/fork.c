@@ -70,7 +70,9 @@ duppage(envid_t envid, unsigned pn)
 	uint32_t perm = uvpt[pn] & PTE_SYSCALL;
 	void *addr = (void *) (pn * PGSIZE);
 
-	if ((perm & PTE_W) || (perm & PTE_COW)) {
+	if (perm & PTE_SHARE) {
+		// falls through
+	} else if ((perm & PTE_W) || (perm & PTE_COW)) {
 		perm |= PTE_COW;
 		perm &= ~PTE_W;
 		if ((r = sys_page_map(0, addr, envid, addr, perm)) < 0) {
@@ -80,10 +82,10 @@ duppage(envid_t envid, unsigned pn)
 		if ((r = sys_page_map(0, addr, 0, addr, perm)) < 0) {
 			return r;
 		}
-	} else {
-		if ((r = sys_page_map(0, addr, envid, addr, perm)) < 0) {
-			return r;
-		}
+		return 0;
+	}
+	if ((r = sys_page_map(0, addr, envid, addr, perm)) < 0) {
+		return r;
 	}
 	return 0;
 }
