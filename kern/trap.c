@@ -222,10 +222,15 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 4: Your code here.
 	switch (tf->tf_trapno) {
 		case IRQ_OFFSET + IRQ_TIMER:
-			spin_lock(&env_lock);
 			lapic_eoi();
+			spin_lock(&env_lock);
 			sched_yield();
 			return;
+	}
+
+	// Handle keyboard and serial interrupts.
+	// LAB 5: Your code here.
+	switch (tf->tf_trapno) {
 		case IRQ_OFFSET + IRQ_KBD:
 			lapic_eoi();
 			kbd_intr();
@@ -234,10 +239,11 @@ trap_dispatch(struct Trapframe *tf)
 			lapic_eoi();
 			serial_intr();
 			return;
+		case IRQ_OFFSET + IRQ_IDE:
+			lapic_eoi();
+			wait_trap_handler(tf);
+			return;
 	}
-
-	// Handle keyboard and serial interrupts.
-	// LAB 5: Your code here.
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
@@ -398,3 +404,19 @@ page_fault_handler(struct Trapframe *tf)
 	env_destroy(curenv);
 }
 
+void
+wait_trap_handler(struct Trapframe *tf) {
+	size_t envx;
+	struct Env *e;
+
+	spin_lock(&env_lock);
+	for (envx = 0; envx < NENV; envx++) {
+		e = &envs[envx];
+		if (e->env_status == ENV_NOT_RUNNABLE && e->env_wait_trap == tf->tf_trapno) {
+			e->env_wait_trap = -1;
+			e->env_tf.tf_regs.reg_eax = 0;
+			e->env_status = ENV_RUNNABLE;
+		}
+	}
+	spin_unlock(&env_lock);
+}

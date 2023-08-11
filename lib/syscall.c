@@ -117,3 +117,8 @@ sys_ipc_recv(void *dstva)
 	return syscall(SYS_ipc_recv, 1, (uint32_t)dstva, 0, 0, 0, 0);
 }
 
+int
+sys_wait_trap(uint32_t trapno)
+{
+	return syscall(SYS_wait_trap, trapno, 0, 0, 0, 0, 0);
+}

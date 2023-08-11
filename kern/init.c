@@ -33,6 +33,7 @@ i386_init(void)
 	// Lab 3 user environment initialization functions
 	env_init();
 	trap_init();
+	irq_setmask_8259A(irq_mask_8259A & ~(1<<IRQ_IDE));
 
 	// Lab 4 multiprocessor initialization functions
 	mp_init();

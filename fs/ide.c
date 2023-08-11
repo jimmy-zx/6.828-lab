@@ -19,8 +19,9 @@ ide_wait_ready(bool check_error)
 {
 	int r;
 
-	while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY)
-		/* do nothing */;
+	while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY) {
+		sys_wait_trap(IRQ_OFFSET + IRQ_IDE);
+	}
 
 	if (check_error && (r & (IDE_DF|IDE_ERR)) != 0)
 		return -1;

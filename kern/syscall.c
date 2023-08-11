@@ -456,6 +456,23 @@ sys_ipc_recv(void *dstva)
 	return 0;
 }
 
+// Block until an interrupt is arrived.
+static int
+sys_wait_trap(uint32_t trapno) {
+	switch (trapno) {
+		case IRQ_OFFSET + IRQ_IDE:
+			break;
+		default:
+			return -E_INVAL;
+	}
+	spin_lock(&env_lock);
+	assert(curenv->env_wait_trap == -1);
+	curenv->env_wait_trap = trapno;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+	spin_unlock(&env_lock);
+	return 0;
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -508,6 +525,9 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			break;
 		case SYS_ipc_recv:
 			ret = sys_ipc_recv((void *) a1);
+			break;
+		case SYS_wait_trap:
+			ret = sys_wait_trap((uint32_t) a1);
 			break;
 		default:
 			ret = -E_INVAL;
