@@ -241,6 +241,7 @@ trap_dispatch(struct Trapframe *tf)
 			return;
 		case IRQ_OFFSET + IRQ_IDE:
 			lapic_eoi();
+			outb(IO_PIC2, 0x20);  // Acknowledge EOI
 			wait_trap_handler(tf);
 			return;
 	}
