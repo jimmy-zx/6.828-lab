@@ -14,12 +14,13 @@
 
 ## Completed Labs (of 6)
 
-| Name                            | Branch                                                  |
-|---------------------------------|---------------------------------------------------------|
-| Lab 1: Booting a PC             | [lab1](https://github.com/jimmy-zx/6.828-lab/tree/lab1) |
-| Lab 2: Memory Management        | [lab2](https://github.com/jimmy-zx/6.828-lab/tree/lab2) |
-| Lab 3: User Environments        | [lab3](https://github.com/jimmy-zx/6.828-lab/tree/lab3) |
-| Lab 4: Preemptive Multitasking  | [lab4](https://github.com/jimmy-zx/6.828-lab/tree/lab4) |
+| Name                                | Branch                                                  |
+|-------------------------------------|---------------------------------------------------------|
+| Lab 1: Booting a PC                 | [lab1](https://github.com/jimmy-zx/6.828-lab/tree/lab1) |
+| Lab 2: Memory Management            | [lab2](https://github.com/jimmy-zx/6.828-lab/tree/lab2) |
+| Lab 3: User Environments            | [lab3](https://github.com/jimmy-zx/6.828-lab/tree/lab3) |
+| Lab 4: Preemptive Multitasking      | [lab4](https://github.com/jimmy-zx/6.828-lab/tree/lab4) |
+| Lab 5: File system, Spawn and Shell | [lab5](https://github.com/jimmy-zx/6.828-lab/tree/lab5) |
 
 ## Completed Homeworks (of 19)
 
