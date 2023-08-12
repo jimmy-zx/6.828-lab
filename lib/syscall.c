@@ -19,6 +19,7 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// The last clause tells the assembler that this can
 	// potentially change the condition codes and arbitrary
 	// memory locations.
+	assert(check == 0 || check == 1);
 
 	asm volatile("int %1\n"
 		     : "=a" (ret)
@@ -120,5 +121,5 @@ sys_ipc_recv(void *dstva)
 int
 sys_wait_trap(uint32_t trapno)
 {
-	return syscall(SYS_wait_trap, trapno, 0, 0, 0, 0, 0);
+	return syscall(SYS_wait_trap, 1, trapno, 0, 0, 0, 0);
 }
