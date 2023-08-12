@@ -14,15 +14,23 @@
 
 static int diskno = 1;
 
+static unsigned wait_syscall = 0, wait_call = 0;
+
 static int
 ide_wait_ready(bool check_error)
 {
 	int r;
 
+	unsigned count = 0;
+	wait_call++;
 	while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY) {
+		count++;
 		// sys_yield();
 		assert(sys_wait_trap(IRQ_OFFSET + IRQ_IDE) == 0);
 	}
+	wait_syscall += count;
+
+	cprintf("ide_wait_ready: (+%u) %u/%u=%lf\n", count, wait_syscall, wait_call, (double) wait_syscall / wait_call);
 
 	if (check_error && (r & (IDE_DF|IDE_ERR)) != 0)
 		return -1;
