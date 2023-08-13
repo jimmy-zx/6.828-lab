@@ -69,8 +69,9 @@ sched_halt(void)
 		if ((envs[i].env_status == ENV_RUNNABLE ||
 		     envs[i].env_status == ENV_RUNNING ||
 		     envs[i].env_status == ENV_DYING ||
-		     envs[i].env_status == ENV_NOT_RUNNABLE))
+		     (envs[i].env_status == ENV_NOT_RUNNABLE && envs[i].env_type != ENV_TYPE_FS))) {
 			break;
+		}
 	}
 	// Note: at this point we don't need to hold env_lock, but unlocking
 	//  will cause other CPUS to also drop into the kernel monitor.

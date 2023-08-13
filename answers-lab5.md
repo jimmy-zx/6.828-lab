@@ -434,24 +434,30 @@ But we followed xv6's IDE driver to clear the `nIEN` bit.
 
 ##### Sched fix
 
-There might be some situation that every process is sleeping by `sys_wait_trap()`,
-thus we made `sched_halt()` to also count `ENV_NOT_RUNNABLE` processes:
+There might be some situation that every process is sleeping.
+For example, process A is waiting by `sys_ipc_recv()`, and filesystem
+is waiting by `sys_wait_trap()`.
+Thus we made `sched_halt()` to also consider `ENV_NOT_RUNNABLE` processes.
+
+Note: the filesystem is always running, thus we always ignore the filesystem.
 
 ```diff
 diff --git a/kern/sched.c b/kern/sched.c
-index fb0fdeb..9a5d4c9 100644
+index 9a5d4c9..5e9d140 100644
 --- a/kern/sched.c
 +++ b/kern/sched.c
-@@ -68,8 +68,7 @@ sched_halt(void)
+@@ -68,8 +68,10 @@ sched_halt(void)
  	for (i = 0; i < NENV; i++) {
  		if ((envs[i].env_status == ENV_RUNNABLE ||
  		     envs[i].env_status == ENV_RUNNING ||
--		     envs[i].env_status == ENV_DYING ||
--		     envs[i].env_status == ENV_NOT_RUNNABLE))
-+		     envs[i].env_status == ENV_DYING))
+-		     envs[i].env_status == ENV_DYING))
++		     envs[i].env_status == ENV_DYING ||
++		     (envs[i].env_status == ENV_NOT_RUNNABLE && envs[i].env_type != ENV_TYPE_FS))) {
  			break;
++		}
  	}
  	// Note: at this point we don't need to hold env_lock, but unlocking
+ 	//  will cause other CPUS to also drop into the kernel monitor.
 ```
 
 #### Validation
