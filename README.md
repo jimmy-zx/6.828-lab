@@ -37,6 +37,7 @@
 | 9.  Homework: Barriers                 | [hw9.c](/hw9.c)     |
 | 10. Homework: bigger files for xv6     | [hw10.md](/hw10.md) |
 | 11. Homework: Homework: xv6 log        | [hw11.md](/hw11.md) |
+| 12. Homework: mmap()                   | [hw12.c](/hw12.c)   |
 
 ## Notes
 
