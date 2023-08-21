@@ -10,11 +10,13 @@
 #include <kern/kdebug.h>
 
 // The big kernel lock
-struct spinlock kernel_lock = {
-#ifdef DEBUG_SPINLOCK
-	.name = "kernel_lock"
-#endif
-};
+// struct spinlock kernel_lock = {
+// #ifdef DEBUG_SPINLOCK
+// 	.name = "kernel_lock"
+// #endif
+// };
+
+struct spinlock cons_lock, pmap_lock, env_lock;
 
 #ifdef DEBUG_SPINLOCK
 // Record the current call stack in pcs[] by following the %ebp chain.

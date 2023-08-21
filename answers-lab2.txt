@@ -1,0 +1,23 @@
+1. uintptr_t
+2.
+
+|-|-|-|
+| 960 - 1023 | 0xf0000000 | Remapped physical memory |
+| 959 | 0xefc00000 | Kernel Stack |
+| 956 | 0xef000000 | RO Pages |
+
+3. U/S Control Bits
+
+4. 256MB. Only ~0x0 - KERNBASE = 256MB of physical memory can be linearly mapped.
+
+5. 1024 Page tables + 1 Page Directory + 1024 * 1024 * sizeof(struct PageInfo) ~= 12MB
+
+ 1 page table = 1024 * 4 bytes
+
+ 1 struct PageInfo = ROUNDUP(4 + 2, 4) = 8 bytes
+
+6. At `jmp *%eax`.
+
+`entrypgdir.c` maps first 4MB of memory to kernbase, so that there are two
+VAs that corresponds to the physical address to the kernel. Therefore
+we can continue execute in low EIP before turning on paging.

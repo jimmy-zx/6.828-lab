@@ -19,6 +19,7 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// The last clause tells the assembler that this can
 	// potentially change the condition codes and arbitrary
 	// memory locations.
+	assert(check == 0 || check == 1);
 
 	asm volatile("int %1\n"
 		     : "=a" (ret)
@@ -32,7 +33,7 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		     : "cc", "memory");
 
 	if(check && ret > 0)
-		panic("syscall %d returned %d (> 0)", num, ret);
+		panic("syscall %d returned %e (> 0)", num, ret);
 
 	return ret;
 }
@@ -121,4 +122,10 @@ unsigned int
 sys_time_msec(void)
 {
 	return (unsigned int) syscall(SYS_time_msec, 0, 0, 0, 0, 0, 0);
+}
+
+int
+sys_wait_trap(uint32_t trapno)
+{
+	return syscall(SYS_wait_trap, 1, trapno, 0, 0, 0, 0);
 }

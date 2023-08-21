@@ -19,8 +19,10 @@ ide_wait_ready(bool check_error)
 {
 	int r;
 
-	while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY)
-		/* do nothing */;
+	while (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY) {
+		sys_yield();
+		// assert(sys_wait_trap(IRQ_OFFSET + IRQ_IDE) == 0);
+	}
 
 	if (check_error && (r & (IDE_DF|IDE_ERR)) != 0)
 		return -1;
@@ -69,6 +71,7 @@ ide_read(uint32_t secno, void *dst, size_t nsecs)
 
 	ide_wait_ready(0);
 
+	outb(0x3F6, 0);  // generate IRQ
 	outb(0x1F2, nsecs);
 	outb(0x1F3, secno & 0xFF);
 	outb(0x1F4, (secno >> 8) & 0xFF);
@@ -94,6 +97,7 @@ ide_write(uint32_t secno, const void *src, size_t nsecs)
 
 	ide_wait_ready(0);
 
+	outb(0x3F6, 0);  // generate IRQ
 	outb(0x1F2, nsecs);
 	outb(0x1F3, secno & 0xFF);
 	outb(0x1F4, (secno >> 8) & 0xFF);
