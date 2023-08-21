@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -16,7 +17,7 @@ static size_t page_size;
 // @a: the alignment (must be power of 2)
 //
 // Returns an aligned value.
-#define align_down(x, a) ((x) & ~((typeof(x))(a) - 1))
+#define align_down(x, a) ((x) & ~((__typeof__(x))(a) - 1))
 
 #define AS_LIMIT	(1 << 25) // Maximum limit on virtual memory bytes
 #define MAX_SQRTS	(1 << 27) // Maximum limit on sqrt table entries
@@ -39,8 +40,22 @@ handle_sigsegv(int sig, siginfo_t *si, void *ctx)
 
   // replace these three lines with your implementation
   uintptr_t fault_addr = (uintptr_t)si->si_addr;
-  printf("oops got SIGSEGV at 0x%lx\n", fault_addr);
-  exit(EXIT_FAILURE);
+
+  uintptr_t page_addr = align_down(fault_addr, page_size);
+  static uintptr_t prev_page_addr = 0;
+
+  // unmap previous page if there is one
+  if (prev_page_addr != 0) {
+    munmap((void *)prev_page_addr, page_size);
+  }
+  // map the new page
+  if ((page_addr = (uintptr_t) mmap((void *)page_addr, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0)) == -1) {
+    perror("handle_sigsegv: mmap");
+    exit(EXIT_FAILURE);
+  }
+  prev_page_addr = page_addr;
+  // calculate sqrts
+  calculate_sqrts((double *) page_addr, (double *) page_addr - sqrts, page_size / sizeof(double));
 }
 
 static void
