@@ -8,9 +8,11 @@
 
 [Lecture Recordings for Fall 2020 (6.S081)](https://www.youtube.com/playlist?list=PLTsf9UeqkReZHXWY9yJvTwLJWYYPcKEqK)
 
-## Progress
+[Alternative Lecture Recordings for Fall 2020](https://pdos.csail.mit.edu/6.828/2020/schedule.html)
 
-(Upcoming) `nov 5`
+## Lectures
+
+(Upcoming) `nov 14`
 
 ## Completed Labs (of 6)
 
@@ -24,20 +26,22 @@
 
 ## Completed Homeworks (of 19)
 
-| Name                                   | Solution            |
-|----------------------------------------|---------------------|
-| 1.  Homework: boot xv6                 | [hw1.txt](/hw1.txt) |
-| 2.  Homework: shell                    | [hw2.c](/hw2.c)     |
-| 3.  Homework: xv6 system calls         | [hw3.md](/hw3.md)   |
-| 4.  Homework: xv6 lazy page allocation | [hw4.md](/hw4.md)   |
-| 5.  Homework: xv6 CPU alarm            | [hw5.md](/hw5.md)   |
-| 6.  Homework: Threads and Locking      | [hw6.c](/hw6.c)     |
-| 7.  Homework: xv6 locking              | [hw7.md](/hw7.md)   |
-| 8.  Homework: User-level threads       | [hw8.md](/hw8.md)   |
-| 9.  Homework: Barriers                 | [hw9.c](/hw9.c)     |
-| 10. Homework: bigger files for xv6     | [hw10.md](/hw10.md) |
-| 11. Homework: Homework: xv6 log        | [hw11.md](/hw11.md) |
-| 12. Homework: mmap()                   | [hw12.c](/hw12.c)   |
+| Name                                           | Solution            |
+|------------------------------------------------|---------------------|
+| 1.  Homework: boot xv6                         | [hw1.txt](/hw1.txt) |
+| 2.  Homework: shell                            | [hw2.c](/hw2.c)     |
+| 3.  Homework: xv6 system calls                 | [hw3.md](/hw3.md)   |
+| 4.  Homework: xv6 lazy page allocation         | [hw4.md](/hw4.md)   |
+| 5.  Homework: xv6 CPU alarm                    | [hw5.md](/hw5.md)   |
+| 6.  Homework: Threads and Locking              | [hw6.c](/hw6.c)     |
+| 7.  Homework: xv6 locking                      | [hw7.md](/hw7.md)   |
+| 8.  Homework: User-level threads               | [hw8.md](/hw8.md)   |
+| 9.  Homework: Barriers                         | [hw9.c](/hw9.c)     |
+| 10. Homework: bigger files for xv6             | [hw10.md](/hw10.md) |
+| 11. Homework: Homework: xv6 log                | [hw11.md](/hw11.md) |
+| 12. Homework: mmap()                           | [hw12.c](/hw12.c)   |
+| 13. Homework: OS Organization                  | skipped             |
+| 17. Homework: Hardware/Software Virtualization | [hw17.md](/hw17.md) |
 
 ## Notes
 
